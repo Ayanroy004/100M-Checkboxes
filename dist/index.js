@@ -11,21 +11,19 @@ const app = (0, express_1.default)();
 const httpServer = (0, http_1.createServer)(app);
 const io = new socket_io_1.Server(httpServer);
 const PORT = process.env.PORT || 8000;
-let checkbox = new Array(10).fill(false); // Can be 100_000_000 for real use
+let checkbox = new Array(10).fill(false);
 io.on("connection", (socket) => {
     console.log("User Connected:", socket.id);
     socket.on("checkboxChange", (data) => {
         const { index, checked } = data;
-        console.log(`Checkbox at index ${index} changed to ${checked}`);
         checkbox[index] = checked;
         io.emit("checkboxUpdate", { index, checked });
     });
 });
 app.get("/state", (req, res) => {
-    console.log("Sending current checkbox state:", checkbox);
-    return res.json(checkbox);
+    res.json(checkbox);
 });
-// ✅ Fix for production - use absolute path to public folder
+// ✅ Just use __dirname directly — it's built-in
 app.use(express_1.default.static(path_1.default.join(__dirname, "../public")));
 httpServer.listen(PORT, () => {
     console.log(`✅ Server is running on port ${PORT}`);
