@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "create an 100M checkbox and update real-time at every user.",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "build": "tsc -p .",
     "start" : "node dist/index",
