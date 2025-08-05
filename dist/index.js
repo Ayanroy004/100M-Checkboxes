@@ -11,7 +11,7 @@ const app = (0, express_1.default)();
 const httpServer = (0, http_1.createServer)(app);
 const io = new socket_io_1.Server(httpServer);
 const PORT = process.env.PORT || 8000;
-let checkbox = new Array(10).fill(false);
+let checkbox = new Array(100).fill(false);
 io.on("connection", (socket) => {
     console.log("User Connected:", socket.id);
     socket.on("checkboxChange", (data) => {

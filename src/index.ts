@@ -8,7 +8,7 @@ const httpServer = createServer(app);
 const io = new Server(httpServer);
 const PORT = process.env.PORT || 8000;
 
-let checkbox = new Array(100000).fill(false);
+let checkbox = new Array(100).fill(false);
 
 io.on("connection", (socket: Socket) => {
   console.log("User Connected:", socket.id);
