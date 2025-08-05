@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>100M Checkbox</title>
+  </head>
+  <body>
+    <div class="checkbox-container">
+      <h1>100M Checkbox</h1>
+      <p>Check the checkbox to update the count.</p>
+      <div id="checkboxes"></div>
+      <p>Total Checked: <span id="total-checked">0</span></p>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        async function  stateUpdate(){
+          const checkBoxes = await fetch("/state",{
+            headers: {
+              "Content-Type": "application/json",
+            },
+          });
+          const data = await checkBoxes.json();
+          console.log("data",data)
+          if(data){
+            const checkboxesContainer = document.getElementById("checkboxes");
+            checkboxesContainer.innerHTML = ""; // Clear existing checkboxes
+            data.forEach((item, index) => {
+              const checkbox = document.createElement("input");
+              checkbox.type = "checkbox";
+              checkbox.id = `checkbox-${index}`;
+              checkbox.checked = item;
+              checkbox.addEventListener("change", () => {
+                socket.emit("checkboxChange", { index, checked: checkbox.checked });
+              });
+              console.log("item",item)
+              checkboxesContainer.appendChild(checkbox);
+          });
+        }
+      }
+
+      socket.on("checkboxUpdate", (data) => {
+        console.log("Checkbox state updated", data);
+        const checkbox = document.getElementById(`checkbox-${data.index}`);
+        if (checkbox) {
+          checkbox.checked = data.checked;
+        }
+      });
+        stateUpdate();
+    </script>
+  </body>
+</html>

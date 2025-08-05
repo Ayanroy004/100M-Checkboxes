@@ -1,0 +1,23 @@
+{
+  "name": "checkbox-problem",
+  "version": "1.0.0",
+  "description": "create an 100M checkbox and update real-time at every user.",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc -p .",
+    "start" : "node dist/index",
+    "dev": "tsc-watch --onSuccess \"npm start\""
+  },
+  "author": "Ayn Roy",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/express": "^5.0.3",
+    "@types/node": "^24.2.0",
+    "tsc-watch": "^7.1.1",
+    "typescript": "^5.9.2"
+  },
+  "dependencies": {
+    "express": "^5.1.0",
+    "socket.io": "^4.8.1"
+  }
+}
