@@ -11,23 +11,26 @@
       <p>Check the checkbox to update the count.</p>
       <div id="checkboxes"></div>
       <p>Total Checked: <span id="total-checked">0</span></p>
+      <button onclick="clearData()">Clear</button>
     </div>
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
         const socket = io();
-        async function  stateUpdate(){
-          const checkBoxes = await fetch("/state",{
-            headers: {
-              "Content-Type": "application/json",
-            },
-          });
-          const data = await checkBoxes.json();
-          console.log("data",data)
-          if(data){
-            const checkboxesContainer = document.getElementById("checkboxes");
-            checkboxesContainer.innerHTML = ""; // Clear existing checkboxes
-            data.forEach((item, index) => {
+
+        const clearData = ()=>{
+          console.log("delete")
+
+         socket.emit("clear")
+         stateUpdate();
+
+        }
+
+        function renderCheckbox(cachedParseData){
+          console.log("cachedParseData",cachedParseData)
+          const checkboxesContainer = document.getElementById("checkboxes");
+          checkboxesContainer.innerHTML = ""; // Clear existing checkboxes
+          cachedParseData.forEach((item, index) => {
               const checkbox = document.createElement("input");
               checkbox.type = "checkbox";
               checkbox.id = `checkbox-${index}`;
@@ -39,14 +42,40 @@
               checkboxesContainer.appendChild(checkbox);
           });
         }
+
+        async function  stateUpdate(){
+          const checkBoxes = await fetch("/state",{
+            headers: {
+              "Content-Type": "application/json",
+            },
+          });
+
+          const jsonData = await checkBoxes.json();
+          const {cachedParseData, totalTic} = jsonData;
+          console.log("cachedParseData",cachedParseData)
+          document.querySelector("#total-checked").innerText = totalTic || 0
+          if(cachedParseData){
+            renderCheckbox(cachedParseData)
+        }else{
+          renderCheckbox(jsonData)
+        }
       }
 
-      socket.on("checkboxUpdate", (data) => {
-        console.log("Checkbox state updated", data);
-        const checkbox = document.getElementById(`checkbox-${data.index}`);
-        if (checkbox) {
-          checkbox.checked = data.checked;
+
+      socket.on("checkboxUpdate", (cachedParseData) => {
+        console.log("Checkbox state updated", cachedParseData);
+
+        if(cachedParseData.flag === 1){
+          renderCheckbox(cachedParseData.checkbox)
+
+        }else{
+
+          const checkbox = document.getElementById(`checkbox-${cachedParseData.index}`);
+          if (checkbox) {
+            checkbox.checked = cachedParseData.checked;
+          }
         }
+        document.querySelector("#total-checked").innerText = cachedParseData.count || 0
       });
         stateUpdate();
     </script>
