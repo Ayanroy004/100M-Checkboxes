@@ -8,9 +8,9 @@ const httpServer = createServer(app);
 const io = new Server(httpServer);
 const PORT = process.env.PORT || 8000;
 
-const redis = new Redis({ host: "localhost", port: 6379 });
-const publisher = new Redis({ host: "localhost", port: 6379 });
-const subscriber = new Redis({ host: "localhost", port: 6379 });
+const redis = new Redis();
+const publisher = new Redis();
+const subscriber = new Redis();
 
 let checkbox = new Array(10).fill(false);
 // redis.set("checkbox", JSON.stringify(checkbox)); // Update Redis with new state
