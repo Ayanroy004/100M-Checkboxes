@@ -3,81 +3,228 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>100M Checkbox</title>
+    <title>1 Thousand Checkbox</title>
+    <style>
+                      * {
+                        box-sizing: border-box;
+                      }
+
+                      body {
+                        font-family: 'Segoe UI', sans-serif;
+                        margin: 0;
+                        padding: 0;
+                        background: #f0f2f5;
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        /* height: 100vh; */
+                      }
+
+                      .checkbox-container {
+                        background: white;
+                        padding: 2rem;
+                        border-radius: 12px;
+                        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+                        width: 90%;
+                        /* max-width: 600px; */
+                      }
+
+                      h1 {
+                        margin-top: 0;
+                        text-align: center;
+                        color: #333;
+                      }
+
+                      p {
+                        text-align: center;
+                        font-size: 1.1rem;
+                      }
+
+                      #checkboxes {
+                        display: grid;
+                        grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
+                        gap: 10px;
+                        margin: 1rem 0;
+                        padding: 10px;
+                        border: 1px solid #ddd;
+                        border-radius: 8px;
+                        background: #fafafa;
+                      }
+
+          input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+             pointer-events: none;         /* Prevent interaction */
+      accent-color: #ff4d4f;        /* Your custom color */
+                        /* No graying */
+      /* cursor: not-allowed; */
+          }
+
+
+
+
+                      #total-checked {
+                        font-weight: bold;
+                        color: #007bff;
+                      }
+
+                      .clear-btn {
+                        display: block;
+                        margin: 1rem auto 0;
+                        padding: 0.6rem 1.2rem;
+                        background-color: #dc3545;
+                        color: white;
+                        border: none;
+                        border-radius: 6px;
+                        cursor: pointer;
+                        font-size: 1rem;
+                        transition: background 0.3s;
+                      }
+
+                      button:hover {
+                        background-color: #c82333;
+                      }
+                      .connect-container{
+                        display: flex;
+                        justify-content: end;
+                        align-items: center;
+                        gap: 10px;
+                        height: 65px;
+                      }
+                      .connect-container input{
+                        height: 30px;
+                        padding-left: 10px;
+                        border: 1px solid brown;
+                        border-radius: 5px;
+                        /* background-color: #c82333; */
+                        outline: none;
+                      }
+                      .connect-container button{
+                        background-color: rgb(170, 43, 8);
+                        color: #FFFFFF;
+                        border: none;
+                        border-radius: 10px;
+                        padding: 8px;
+                      }
+                      .connect-container button:hover{
+                        background-color: rgba(170, 43, 8, 0.833);
+                      }
+                      .connect-container button:disabled{
+                        opacity: 0.5;
+                        cursor: not-allowed;
+                      }
+    </style>
   </head>
   <body>
     <div class="checkbox-container">
-      <h1>100M Checkbox</h1>
-      <p>Check the checkbox to update the count.</p>
-      <div id="checkboxes"></div>
+      <h1>1 Thousand Checkbox</h1>
+      <p>Check the boxes to Connect Real Time Server 😀</p>
       <p>Total Checked: <span id="total-checked">0</span></p>
-      <button onclick="clearData()">Clear</button>
+
+      <div class="connect-container">
+        <h4 class="show-userName"></h4>
+        <input id="name" type="text" placeholder="Enter your name..." />
+        <button id="connect" onclick="handelSubmitUserName()">Connect</button>
+      </div>
+      <div id="checkboxes">
+        <p style="grid-column: 1 / -1; text-align: center;">Loading...</p>
+      </div>
+      <button class="clear-btn" onclick="clearData()">Clear All</button>
     </div>
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
-        const socket = io();
 
-        const clearData = ()=>{
-          console.log("delete")
+          const socket = io();
 
-         socket.emit("clear")
-         stateUpdate();
-
-        }
-
-        function renderCheckbox(cachedParseData){
-          console.log("cachedParseData",cachedParseData)
-          const checkboxesContainer = document.getElementById("checkboxes");
-          checkboxesContainer.innerHTML = ""; // Clear existing checkboxes
-          cachedParseData.forEach((item, index) => {
+          const clearData = () => {
+            socket.emit("clear");
+            stateUpdate();
+          };
+          function handelSubmitUserName() {
+            const getUserValue = document.querySelector("#name");
+            const showUserName = document.querySelector(".show-userName");
+            console.log("User done", getUserValue.value);
+            if (getUserValue.value !== "") {
+              const connectBtn = document.querySelector("#connect");
+              connectBtn.disabled = true;
+              socket.emit("userConnected", getUserValue.value, getUserValue.value);
+              showUserName.innerText = getUserValue.value;
+              getUserValue.value = "";
+            }
+          }
+          function renderCheckbox(cachedParseData) {
+            const checkboxesContainer = document.getElementById("checkboxes");
+            checkboxesContainer.innerHTML = "";
+            cachedParseData.forEach((item, index) => {
+              const label = document.createElement("label");
               const checkbox = document.createElement("input");
               checkbox.type = "checkbox";
-              checkbox.id = `checkbox-${index}`;
               checkbox.checked = item;
-              checkbox.addEventListener("change", () => {
-                socket.emit("checkboxChange", { index, checked: checkbox.checked });
-              });
-              console.log("item",item)
+              // checkbox.checked = disable
+              // checkbox.disabled = true
+              checkbox.id = `checkbox-${index}`;
+              // label.appendChild(checkbox);
               checkboxesContainer.appendChild(checkbox);
-          });
-        }
-
-        async function  stateUpdate(){
-          const checkBoxes = await fetch("/state",{
-            headers: {
-              "Content-Type": "application/json",
-            },
-          });
-
-          const jsonData = await checkBoxes.json();
-          const {cachedParseData, totalTic} = jsonData;
-          console.log("cachedParseData",cachedParseData)
-          document.querySelector("#total-checked").innerText = totalTic || 0
-          if(cachedParseData){
-            renderCheckbox(cachedParseData)
-        }else{
-          renderCheckbox(jsonData)
-        }
-      }
-
-
-      socket.on("checkboxUpdate", (cachedParseData) => {
-        console.log("Checkbox state updated", cachedParseData);
-
-        if(cachedParseData.flag === 1){
-          renderCheckbox(cachedParseData.checkbox)
-
-        }else{
-
-          const checkbox = document.getElementById(`checkbox-${cachedParseData.index}`);
-          if (checkbox) {
-            checkbox.checked = cachedParseData.checked;
+            });
           }
-        }
-        document.querySelector("#total-checked").innerText = cachedParseData.count || 0
-      });
-        stateUpdate();
+
+          async function stateUpdate() {
+            const token = localStorage.getItem("userName");
+            if (token) {
+              console.log("User Name : ", token);
+            }else{
+              console.log("User Name not found in localStorage");
+            }
+            const checkBoxes = await fetch("/state", {
+              headers: {
+                'Authorization': `Bearer ${token}`,
+                "Content-Type": "application/json",
+              },
+            });
+
+            // const checkbox = await checkBoxes.json();
+            const jsonData = await checkBoxes.json();
+            const { cachedParseData, totalTic } = jsonData;
+            console.log("Frontend table : ", cachedParseData);
+            console.log("Frontend count : ", totalTic);
+            document.querySelector("#total-checked").innerText = totalTic || 0;
+            if (cachedParseData) {
+              renderCheckbox(cachedParseData);
+            } else {
+              renderCheckbox(jsonData);
+            }
+          }
+
+
+      socket.on("saveUser", (some)=>{
+            const {data, jwt} = some
+            localStorage.setItem("userName", jwt);
+            localStorage.setItem("user", data);
+          })
+          // socket.on("checkboxUpdate", (data) => {
+          //   if (data.flag === 1) {
+          //     renderCheckbox(data.checkbox);
+          //   } else {
+          //     const checkbox = document.getElementById(`checkbox-${data.index}`);
+          //     if (checkbox) {
+          //       checkbox.checked = data.checked;
+          //     }
+          //   }
+          //   document.querySelector("#total-checked").innerText = data.count || 0;
+          // });
+
+          socket.on("userConnectedDone", (data) => {
+            const checkbox = document.getElementById(`checkbox-${data.index}`);
+            if (data.flag === 1) {
+              renderCheckbox(data.checkbox);
+            } else {
+              checkbox.checked = true;
+            }
+            document.querySelector("#total-checked").innerText = data.count || 0;
+          });
+
+          stateUpdate();
     </script>
   </body>
 </html>
