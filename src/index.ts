@@ -15,24 +15,24 @@ const PORT = process.env.PORT || 8000;
 
 dotenv.config();
 
-// ✅ Create a function to initialize Redis connection
 const createRedisClient = () => {
   if (process.env.REDIS_URL) {
-    // Use Redis URL for production (Render, Upstash, etc.)
-    return new Redis(process.env.REDIS_URL);
-  } else {
-    // Use host & port for local development
-    return new Redis({
-      host: process.env.REDIS_HOST || "127.0.0.1",
-      port: Number(process.env.REDIS_PORT) || 6379,
+    // Works for Render Managed Redis / Upstash (TLS uses rediss://)
+    return new Redis(process.env.REDIS_URL, {
+      // ioredis auto-enables TLS for rediss://; keeping this is harmless:
+      tls: process.env.REDIS_URL.startsWith("rediss://") ? {} : undefined,
     });
   }
+  // Local Docker Redis
+  return new Redis({
+    host: process.env.REDIS_HOST || "127.0.0.1",
+    port: Number(process.env.REDIS_PORT) || 6379,
+  });
 };
 
-// ✅ Initialize Redis clients
-const redis = createRedisClient();
-const publisher = createRedisClient();
-const subscriber = createRedisClient();
+export const redis = createRedisClient();
+export const publisher = createRedisClient();
+export const subscriber = createRedisClient();
 
 let checkbox = new Array(1000).fill(false);
 
