@@ -122,13 +122,7 @@
       <p>Total Checked: <span id="total-checked">0</span></p>
 
       <div class="connect-container">
-        <button
-          class="discon"
-          onclick="handelDisconnect()"
-          style="display: none;"
-        >
-          Disconnect
-        </button>
+        <button class="discon" onclick="handelDisconnect()">Disconnect</button>
         <!-- <h4 class="show-userName"></h4> -->
         <input id="name" type="text" placeholder="Enter your name..." />
         <button id="connect" onclick="handelSubmitUserName()">Connect</button>
@@ -136,7 +130,7 @@
       <div id="checkboxes">
         <p style="grid-column: 1 / -1; text-align: center;">Loading...</p>
       </div>
-      <button class="clear-btn" onclick="clearData()">Clear All</button>
+      <!-- <button class="clear-btn" onclick="clearData()">Clear All</button> -->
     </div>
 
     <script src="/socket.io/socket.io.js"></script>
@@ -148,15 +142,20 @@
               alert(data.message);
             })
           const clearData = () => {
+              localStorage.removeItem("token");
+              localStorage.removeItem("user");
             socket.emit("clear");
             const connectBtn = document.querySelector("#connect");
               const inputName = document.querySelector("#name");
               inputName.disabled = false;
               connectBtn.disabled = false;
               inputName.value = "";
-              document.querySelector(".show-userName").innerText = "";
-              document.querySelector(".discon").style="display:none"
+              // document.querySelector(".show-userName").innerText = "";
+            console.log("Clear data before state update ")
             stateUpdate();
+            console.log("Clear data after state update ")
+
+              // document.querySelector(".discon").style="display:none"
           };
           async function handelDisconnect (){
             const token = localStorage.getItem("token");
@@ -194,7 +193,7 @@
               inputName.disabled = true;
 
               socket.emit("userConnected", getUserValue.value);
-              showUserName.innerText = getUserValue.value;
+              // showUserName.innerText = getUserValue.value;
               getUserValue.value = "";
             }
 
@@ -219,6 +218,9 @@
           async function stateUpdate() {
             const token = localStorage.getItem("token");
             if (token) {
+              console.log("User Name found in localStorage");
+              document.querySelector(".discon").style="display:block"
+
               console.log("User Name : ", token.trim());
               const existUser = await fetch("/check-user",
               {headers: {
@@ -236,6 +238,7 @@
               connectBtn.disabled = true;
             }else{
               console.log("User Name not found in localStorage");
+              document.querySelector(".discon").style="display:none"
 
             }
             const checkBoxes = await fetch("/state", {
@@ -281,11 +284,19 @@
               connectBtn.disabled = false;
               inputName.value = "";
               renderCheckbox(data.checkbox);
+              document.querySelector(".discon").style="display:none"
+
             } else {
               checkbox.checked = true;
+              const userName = localStorage.getItem("user");
+             document.querySelector("#name").value = userName;
+
             }
             document.querySelector("#total-checked").innerText = data.count || 0;
+            const token = localStorage.getItem("token");
+            if(token){
             document.querySelector(".discon").style="display:block"
+            }
           });
 
           stateUpdate();
