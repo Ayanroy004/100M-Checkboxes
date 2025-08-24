@@ -17,24 +17,18 @@ const httpServer = (0, http_1.createServer)(app);
 const io = new socket_io_1.Server(httpServer);
 const PORT = process.env.PORT || 8000;
 dotenv_1.default.config();
-// ✅ Create a function to initialize Redis connection
-const createRedisClient = () => {
-    if (process.env.REDIS_URL) {
-        // Use Redis URL for production (Render, Upstash, etc.)
-        return new ioredis_1.default(process.env.REDIS_URL);
-    }
-    else {
-        // Use host & port for local development
-        return new ioredis_1.default({
-            host: process.env.REDIS_HOST || "127.0.0.1",
-            port: Number(process.env.REDIS_PORT) || 6379,
-        });
-    }
-};
-// ✅ Initialize Redis clients
-const redis = createRedisClient();
-const publisher = createRedisClient();
-const subscriber = createRedisClient();
+const redis = new ioredis_1.default({
+    host: process.env.REDIS_HOST,
+    port: Number(process.env.REDIS_PORT),
+});
+const publisher = new ioredis_1.default({
+    host: process.env.REDIS_HOST,
+    port: Number(process.env.REDIS_PORT),
+});
+const subscriber = new ioredis_1.default({
+    host: process.env.REDIS_HOST,
+    port: Number(process.env.REDIS_PORT),
+});
 let checkbox = new Array(1000).fill(false);
 subscriber.subscribe("server:broker");
 subscriber.on("message", async (channel, message) => {
