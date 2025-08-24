@@ -14,18 +14,25 @@ const io = new Server(httpServer);
 const PORT = process.env.PORT || 8000;
 
 dotenv.config();
-const redis = new Redis({
-  host: process.env.REDIS_HOST,
-  port: Number(process.env.REDIS_PORT),
-});
-const publisher = new Redis({
-  host: process.env.REDIS_HOST,
-  port: Number(process.env.REDIS_PORT),
-});
-const subscriber = new Redis({
-  host: process.env.REDIS_HOST,
-  port: Number(process.env.REDIS_PORT),
-});
+
+// ✅ Create a function to initialize Redis connection
+const createRedisClient = () => {
+  if (process.env.REDIS_URL) {
+    // Use Redis URL for production (Render, Upstash, etc.)
+    return new Redis(process.env.REDIS_URL);
+  } else {
+    // Use host & port for local development
+    return new Redis({
+      host: process.env.REDIS_HOST || "127.0.0.1",
+      port: Number(process.env.REDIS_PORT) || 6379,
+    });
+  }
+};
+
+// ✅ Initialize Redis clients
+const redis = createRedisClient();
+const publisher = createRedisClient();
+const subscriber = createRedisClient();
 
 let checkbox = new Array(1000).fill(false);
 
