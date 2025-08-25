@@ -8,6 +8,9 @@ This project is a real-time web application built with **Express**, **TypeScript
 
 Users can connect using their name and claim a checkbox from a pool of 1,000. The app features real-time updates across clients, making it ideal for visualizing user participation, load simulation, or just an interactive demo.
 
+# 📷 Screenshot 👇
+![Screenshot](./public/Screenshot.png)
+
 Features:
 
 - 🔌 Real-time Communication via Socket.IO
