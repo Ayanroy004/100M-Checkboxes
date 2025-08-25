@@ -3,18 +3,18 @@ const socket = io();
 socket.on("noCheckbox", (data) => {
   alert(data.message);
 });
-const clearData = () => {
-  localStorage.removeItem("token");
-  localStorage.removeItem("user");
-  socket.emit("clear");
-  const connectBtn = document.querySelector("#connect");
-  const inputName = document.querySelector("#name");
-  inputName.disabled = false;
-  connectBtn.disabled = false;
-  inputName.value = "";
+// const clearData = () => {
+//   localStorage.removeItem("token");
+//   localStorage.removeItem("user");
+//   socket.emit("clear");
+//   const connectBtn = document.querySelector("#connect");
+//   const inputName = document.querySelector("#name");
+//   inputName.disabled = false;
+//   connectBtn.disabled = false;
+//   inputName.value = "";
 
-  stateUpdate();
-};
+//   stateUpdate();
+// };
 async function handelDisconnect() {
   const token = localStorage.getItem("token");
   const user = localStorage.getItem("user");
