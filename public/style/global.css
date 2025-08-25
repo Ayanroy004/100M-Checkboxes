@@ -32,7 +32,9 @@ p {
   text-align: center;
   font-size: 1.1rem;
 }
-
+#name{
+  padding: 15px;
+}
 #checkboxes {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));

@@ -17,9 +17,7 @@ dotenv.config();
 
 const createRedisClient = () => {
   if (process.env.REDIS_URL) {
-    // Works for Render Managed Redis / Upstash (TLS uses rediss://)
     return new Redis(process.env.REDIS_URL, {
-      // ioredis auto-enables TLS for rediss://; keeping this is harmless:
       tls: process.env.REDIS_URL.startsWith("rediss://") ? {} : undefined,
     });
   }
@@ -43,7 +41,6 @@ subscriber.on("message", async (channel, message) => {
     const index = messageObject.randomIndex;
     const totalTic = await redis.get("totalCheckboxTic");
     const count = Number(totalTic || 0);
-    console.log("index", index, "count", count);
     io.emit("userDisconnectedDone", { index, count });
   } else if (messageObject.message === "connected") {
     const index = messageObject.index;
@@ -59,33 +56,6 @@ subscriber.on("message", async (channel, message) => {
 io.on("connection", async (socket: Socket) => {
   console.log("User Connected:", socket.id);
 
-  // socket.on(
-  //   "checkboxChange",
-  //   async (data: { index: number; checked: boolean }) => {
-  //     const { index, checked } = data;
-  //     const cachedCheckbox = await redis.get("checkbox");
-  //     if (cachedCheckbox) {
-  //       try {
-  //         const jsonCached = JSON.parse(cachedCheckbox);
-  //         jsonCached[index] = checked;
-
-  //         const totalTic = await redis.get("totalCheckboxTic");
-  //         // console.log("update tic", totalTic);
-
-  //         await redis.incr("totalCheckboxTic");
-
-  //         await redis.set("checkbox", JSON.stringify(jsonCached));
-  //       } catch (e) {
-  //         console.log("Err : ", e);
-  //       }
-  //     }
-  //     await publisher.publish(
-  //       "server:broker",
-  //       JSON.stringify({ checked, index })
-  //     );
-  //   }
-  // );
-
   socket.on("clear", async () => {
     await redis.del("checkbox");
     await redis.del("totalCheckboxTic");
@@ -94,14 +64,12 @@ io.on("connection", async (socket: Socket) => {
   });
 
   socket.on("userConnected", async (data: UserData) => {
-    console.log("user data : ", data);
 
     const checkboxes = await redis.get("checkbox");
     let trulyData = [];
     if (checkboxes) {
       const parseData = JSON.parse(checkboxes);
       trulyData = parseData.filter((e: boolean) => e === false);
-      console.log("true data : ", trulyData);
     }
     if (!trulyData) {
       socket.emit("noCheckbox", { message: "No free checkbox left!" });
@@ -109,10 +77,8 @@ io.on("connection", async (socket: Socket) => {
     }
     if (data) {
       const holdRes = await addUserData(data); // check jwt and store user data
-      console.log("holdRes : ", holdRes);
       let createdJwt = "";
       if (holdRes) {
-        console.log("ENV : ", process.env.JWT_SECRET);
         const userId = holdRes._id;
         createdJwt = jwt.sign(
           { data, role: "user", userId },
@@ -133,7 +99,6 @@ io.on("connection", async (socket: Socket) => {
         }
 
         if (availableIndexes.length === 0) {
-          console.log("⚠️ No free checkbox left!");
           socket.emit("noCheckbox", { message: "No free checkbox left!" });
           return;
         }
@@ -162,7 +127,6 @@ io.on("connection", async (socket: Socket) => {
   });
 
   socket.on("userDisconnect", async () => {
-    console.log("User Disconnected:", socket.id);
     let randomIndex: number | null = null;
 
     const checkboxes = await redis.get("checkbox");
@@ -190,8 +154,6 @@ io.on("connection", async (socket: Socket) => {
 
         // Decrease active count
         await redis.decr("totalCheckboxTic");
-      } else {
-        console.log("⚠️ No active checkboxes to disconnect.");
       }
     }
 
@@ -221,10 +183,6 @@ const addUserData = async (data: UserData) => {
         name: data,
         role: "user",
       };
-      // Here you can save the user to the database if needed
-      console.log("User data added:", user);
-      // For example, you can use the User model to save the user
-
       const res = await User.create(user);
       return res;
     }
@@ -239,11 +197,9 @@ function randomNumber(max: number) {
 }
 
 const findDb = async (token: string) => {
-  console.log("Token : ", token);
   const decoded = verifyJwt(token);
   if (decoded) {
     const user = await User.findById(decoded.userId);
-    console.log("User found in DB:", user);
     if (user) {
       return user.name;
     }
@@ -251,16 +207,11 @@ const findDb = async (token: string) => {
 };
 
 app.get("/state", async (req: Request, res: Response) => {
-  // const token = req.headers.authorization || "";
-  // const user = findDb(token);
-
   const cachedCheckbox = await redis.get("checkbox");
   const totalTic = await redis.get("totalCheckboxTic");
   if (cachedCheckbox) {
     try {
       const cachedParseData = await JSON.parse(cachedCheckbox);
-
-      console.log("Mil gaya", totalTic);
       return res.json({ cachedParseData, totalTic });
     } catch (error) {
       console.error("Error parsing checkbox state from Redis:", error);
@@ -276,11 +227,8 @@ app.get("/state", async (req: Request, res: Response) => {
 app.get("/check-user", async (req: Request, res: Response) => {
   const token = req.headers.authorization || "";
   const user = await findDb(token);
-  console.log("user geted");
   if (user) {
     return res.json({ user });
-  } else {
-    console.log("User not found");
   }
 });
 
