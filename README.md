@@ -3,7 +3,7 @@
 # Express + TypeScript + MongoDB + Redis + Docker + Socket.IO Boilerplate
 
 # Test URL
-https://github.com/Ayanroy004/Real-time-Checkboxes
+https://real-time-con.onrender.com
 
 # 📌 Description :
 
